@@ -71,6 +71,36 @@ class SettingsTab extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
+          _SectionTitle('YouTube'),
+          Card(
+            color: AppColors.card,
+            child: ListTile(
+              leading: const Icon(Icons.play_circle_fill_rounded, color: AppColors.primary),
+              title: Text(auth.youtubeChannel?.title ?? 'Connect YouTube'),
+              subtitle: Text(
+                auth.youtubeChannel == null
+                    ? 'Use Google OAuth to link your creator channel'
+                    : '${auth.youtubeChannel!.subscriberLabel} subscribers - ${auth.youtubeChannel!.videoLabel} videos',
+                style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+              ),
+              trailing: auth.youtubeLoading
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : Icon(auth.youtubeChannel == null ? Icons.link_rounded : Icons.check_circle_rounded, color: auth.youtubeChannel == null ? AppColors.textMuted : AppColors.success),
+              onTap: auth.youtubeLoading
+                  ? null
+                  : () async {
+                      if (auth.youtubeChannel != null) {
+                        await auth.disconnectYouTube();
+                      } else {
+                        await auth.connectYouTube();
+                      }
+                      if (!context.mounted) return;
+                      final message = auth.youtubeError ?? (auth.youtubeChannel == null ? 'YouTube disconnected.' : 'YouTube connected successfully.');
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+                    },
+            ),
+          ),
+          const SizedBox(height: 16),
           _SectionTitle('Preferences'),
           Card(
             color: AppColors.card,
