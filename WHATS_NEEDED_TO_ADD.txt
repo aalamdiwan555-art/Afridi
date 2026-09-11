@@ -1,0 +1,162 @@
+================================================================================
+  SMARTYT APP - WHAT YOU NEED TO ADD / CHANGE BEFORE PUBLISHING
+================================================================================
+
+This file lists everything required to take the provided source code from a
+compile-ready scaffold to a production app on GitHub / Google Play / App Store.
+
+--------------------------------------------------------------------------------
+1. FLUTTER SETUP (Required to compile)
+--------------------------------------------------------------------------------
+- Install Flutter SDK (stable channel, >=3.3.0 recommended).
+- Install Android Studio + Android SDK (API 34, min API 21).
+- Set JAVA_HOME to JDK 17 (Gradle 8.x requirement).
+- Run:
+      flutter pub get
+      flutter run
+
+If the android/ or ios/ folders are missing or broken, regenerate them:
+      flutter create . --org com.smartyt --platforms android,ios
+Then re-apply the AndroidManifest.xml and MainActivity.kt changes from this repo.
+
+--------------------------------------------------------------------------------
+2. REAL IN-APP PURCHASES (Critical for monetization)
+--------------------------------------------------------------------------------
+The current code simulates purchases by writing an expiry date to SharedPreferences.
+You MUST replace this with real billing before going live.
+
+Recommended: RevenueCat (https://www.revenuecat.com/)
+  - One SDK handles Google Play Billing + Apple StoreKit together.
+  - Create 4 subscription products in Play Console + App Store Connect:
+      * daily    (consumable or auto-renewing)
+      * weekly   (auto-renewing subscription)
+      * monthly  (auto-renewing subscription)
+      * yearly   (auto-renewing subscription)
+  - Match the SKUs to the plan IDs in lib/data/models/subscription_plan.dart:
+      daily, weekly, monthly, yearly
+  - In SubscriptionProvider.purchase() call RevenueCat's purchase() and then
+    saveSubscription() with the real expiry date returned by the store.
+  - In SubscriptionProvider.restorePurchases() query RevenueCat for active
+    entitlements and update local state.
+
+Alternative: flutter_in_app_purchase (raw Play Billing / StoreKit).
+  - More work but zero RevenueCat fees.
+
+--------------------------------------------------------------------------------
+3. GOOGLE SIGN-IN (Required for YouTube channel linking)
+--------------------------------------------------------------------------------
+- Create a Firebase project (https://console.firebase.google.com/).
+- Add Android app with package name: com.smartyt.app
+- Download google-services.json and place it in:
+      android/app/google-services.json
+- Add the Google Services Gradle plugin to android/build.gradle:
+      classpath 'com.google.gms:google-services:4.4.1'
+  and apply it in android/app/build.gradle:
+      apply plugin: 'com.google.gms.google-services'
+- Register your SHA-1 in Firebase (debug + release):
+      keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
+- For iOS: download GoogleService-Info.plist, add to Runner via Xcode,
+  and configure the REVERSED_CLIENT_ID as a URL scheme in Info.plist.
+
+The demo fallback in AuthProvider will automatically disappear once the
+Google Sign-In config is valid.
+
+--------------------------------------------------------------------------------
+4. YOUTUBE API KEYS (Required for channel sync, stream scheduling, analytics)
+--------------------------------------------------------------------------------
+- Go to Google Cloud Console -> APIs & Services -> Credentials.
+- Create OAuth 2.0 credentials (Web + Android + iOS client IDs).
+- Enable APIs:
+      YouTube Data API v3
+      YouTube Live Streaming API
+      YouTube Analytics API
+- Add the API key and client IDs to your backend or a secure config file.
+- NEVER hardcode secrets in the client source. Use a backend proxy or
+  Firebase Remote Config with encryption.
+
+--------------------------------------------------------------------------------
+5. STREAMING ENGINE (Required for actual live streams)
+--------------------------------------------------------------------------------
+The GoLiveScreen currently simulates a stream session so the UI is testable.
+To go live for real, integrate:
+
+A) ffmpeg-kit (https://pub.dev/packages/ffmpeg_kit_flutter)
+   - Encode screen capture (MediaProjection) or camera feed to H.264/AAC.
+   - Push RTMPS to your ingest relay or directly to YouTube.
+
+B) camera plugin + custom native modules
+   - For camera preview, beauty filters, and AR overlays.
+
+C) Smartyt Cloud Relay (your backend)
+   - Regional RTMP/RTMPS edge ingest points.
+   - Forward to YouTube Live with auto-reconnect, health probes, and 24x7
+     headless playlist runners.
+
+D) WebSocket / Socket.io bridge
+   - For real-time chat pulled from YouTube LiveChat API and pushed to the app.
+
+--------------------------------------------------------------------------------
+6. BACKEND INFRASTRUCTURE (Required for cloud features)
+--------------------------------------------------------------------------------
+You will need a backend for:
+- 24x7 stream runner (headless FFmpeg in Docker/K8s)
+- Cloud recording storage (AWS S3 / GCS)
+- AI services (title generator, thumbnail generator, moderation)
+- Analytics aggregation (ClickHouse / BigQuery)
+- Push notifications (Firebase Cloud Messaging)
+
+A NestJS + PostgreSQL + Redis + Kafka stack is recommended (see tech_stack.txt).
+
+--------------------------------------------------------------------------------
+7. APP STORE COMPLIANCE
+--------------------------------------------------------------------------------
+- Add a Privacy Policy URL (required by Google Play & App Store).
+- Add Terms of Service.
+- Ensure GDPR / DPDP compliance (data deletion flow).
+- Provide a "Restore Purchases" button (already included in the paywall).
+- Do NOT add ads. The monetization is 100% subscription based.
+
+--------------------------------------------------------------------------------
+8. RELEASE BUILD
+--------------------------------------------------------------------------------
+Android:
+  flutter build apk --release
+  flutter build appbundle --release   # for Play Store
+
+iOS:
+  flutter build ios --release
+  # Then archive in Xcode and upload to App Store Connect.
+
+--------------------------------------------------------------------------------
+9. GITHUB REPOSITORY SETUP
+--------------------------------------------------------------------------------
+1. Create a new private or public repo on GitHub.
+2. Initialize git in this folder:
+      git init
+      git add .
+      git commit -m "Initial Smartyt commit"
+      git branch -M main
+      git remote add origin https://github.com/YOURNAME/smartytapp.git
+      git push -u origin main
+3. Add a LICENSE file (MIT or proprietary).
+4. Enable GitHub Actions for CI/CD (Fastlane + Flutter).
+
+--------------------------------------------------------------------------------
+10. SUMMARY CHECKLIST
+--------------------------------------------------------------------------------
+[ ] Flutter SDK + Android SDK installed
+[ ] flutter pub get succeeds
+[ ] Real in-app purchase SDK integrated (RevenueCat recommended)
+[ ] 4 subscription products created in Play Console / App Store Connect
+[ ] Google Sign-In configured (Firebase + SHA-1 + google-services.json)
+[ ] YouTube API keys created and secured via backend
+[ ] Streaming engine wired (ffmpeg-kit / WebRTC / relay)
+[ ] Backend deployed (ingest relay, 24x7 runner, AI services)
+[ ] Privacy policy + TOS added
+[ ] App icons, splash screen, and store screenshots prepared
+[ ] Release build tested on physical devices
+[ ] GitHub repo created and pushed
+
+================================================================================
+If you have questions, open an issue on your GitHub repo or contact the team.
+================================================================================
