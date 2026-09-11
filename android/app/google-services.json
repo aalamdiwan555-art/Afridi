@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "726941782563",
+    "project_id": "named-chariot-508309-n7",
+    "storage_bucket": "named-chariot-508309-n7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:726941782563:android:4deec19e725536a9add796",
+        "android_client_info": {
+          "package_name": "com.smartyt.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "726941782563-uil294gdlllect34k7rku88di0sg0d94.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClzunArDXcfQknnhaTKKBzOFY1XWXgsbw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "726941782563-uil294gdlllect34k7rku88di0sg0d94.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "726941782563-uuthjtgv6bogfgmk5gfa7l12g6m0nq1t.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.smartyt.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
